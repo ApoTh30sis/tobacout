@@ -1,9 +1,16 @@
 import { Router } from "express";
+import { analyzeSmokingRisk } from "./lib/smokingRisk";
 
-const router = Router();
+const statRouter = Router();
 
+statRouter.post("/", (req, res) => {
+  const result = analyzeSmokingRisk(req.body);
 
-router.get("/", async (req, res) => {
-    
-})
-export default router;
+  if (!result.success) {
+    return res.status(400).json(result);
+  }
+
+  return res.status(200).json(result);
+});
+
+export default statRouter;

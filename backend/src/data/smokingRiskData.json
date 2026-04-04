@@ -1,0 +1,307 @@
+{
+  "1_5": {
+    "baseStats": {
+      "totalPeople": 444,
+      "withYearsEstimate": 420,
+      "totalYears": 10068,
+      "avgYearsSmoked": 24,
+      "heartDiseaseYes": 20,
+      "heartDiseaseAnswered": 425,
+      "strokeYes": 10,
+      "strokeAnswered": 426,
+      "lungDiseaseYes": 38,
+      "lungDiseaseAnswered": 425,
+      "heartDiseasePct": 4.7,
+      "strokePct": 2.3,
+      "lungDiseasePct": 8.9
+    },
+    "timeline": [
+      {
+        "yearsSmoked": 10,
+        "multiplier": 1.2,
+        "heartDiseasePct": 5.6,
+        "strokePct": 2.8,
+        "lungDiseasePct": 10.7
+      },
+      {
+        "yearsSmoked": 20,
+        "multiplier": 1.4,
+        "heartDiseasePct": 6.6,
+        "strokePct": 3.2,
+        "lungDiseasePct": 12.5
+      },
+      {
+        "yearsSmoked": 30,
+        "multiplier": 1.6,
+        "heartDiseasePct": 7.5,
+        "strokePct": 3.7,
+        "lungDiseasePct": 14.2
+      },
+      {
+        "yearsSmoked": 40,
+        "multiplier": 1.8,
+        "heartDiseasePct": 8.5,
+        "strokePct": 4.1,
+        "lungDiseasePct": 16
+      },
+      {
+        "yearsSmoked": 50,
+        "multiplier": 2,
+        "heartDiseasePct": 9.4,
+        "strokePct": 4.6,
+        "lungDiseasePct": 17.8
+      },
+      {
+        "yearsSmoked": 60,
+        "multiplier": 2.2,
+        "heartDiseasePct": 10.3,
+        "strokePct": 5.1,
+        "lungDiseasePct": 19.6
+      }
+    ]
+  },
+  "6_10": {
+    "baseStats": {
+      "totalPeople": 367,
+      "withYearsEstimate": 366,
+      "totalYears": 9117,
+      "avgYearsSmoked": 24.9,
+      "heartDiseaseYes": 32,
+      "heartDiseaseAnswered": 354,
+      "strokeYes": 15,
+      "strokeAnswered": 356,
+      "lungDiseaseYes": 61,
+      "lungDiseaseAnswered": 355,
+      "heartDiseasePct": 9,
+      "strokePct": 4.2,
+      "lungDiseasePct": 17.2
+    },
+    "timeline": [
+      {
+        "yearsSmoked": 10,
+        "multiplier": 1.2,
+        "heartDiseasePct": 10.8,
+        "strokePct": 5,
+        "lungDiseasePct": 20.6
+      },
+      {
+        "yearsSmoked": 20,
+        "multiplier": 1.4,
+        "heartDiseasePct": 12.6,
+        "strokePct": 5.9,
+        "lungDiseasePct": 24.1
+      },
+      {
+        "yearsSmoked": 30,
+        "multiplier": 1.6,
+        "heartDiseasePct": 14.4,
+        "strokePct": 6.7,
+        "lungDiseasePct": 27.5
+      },
+      {
+        "yearsSmoked": 40,
+        "multiplier": 1.8,
+        "heartDiseasePct": 16.2,
+        "strokePct": 7.6,
+        "lungDiseasePct": 31
+      },
+      {
+        "yearsSmoked": 50,
+        "multiplier": 2,
+        "heartDiseasePct": 18,
+        "strokePct": 8.4,
+        "lungDiseasePct": 34.4
+      },
+      {
+        "yearsSmoked": 60,
+        "multiplier": 2.2,
+        "heartDiseasePct": 19.8,
+        "strokePct": 9.2,
+        "lungDiseasePct": 37.8
+      }
+    ]
+  },
+  "11_20": {
+    "baseStats": {
+      "totalPeople": 348,
+      "withYearsEstimate": 345,
+      "totalYears": 9781,
+      "avgYearsSmoked": 28.4,
+      "heartDiseaseYes": 30,
+      "heartDiseaseAnswered": 339,
+      "strokeYes": 14,
+      "strokeAnswered": 338,
+      "lungDiseaseYes": 59,
+      "lungDiseaseAnswered": 339,
+      "heartDiseasePct": 8.8,
+      "strokePct": 4.1,
+      "lungDiseasePct": 17.4
+    },
+    "timeline": [
+      {
+        "yearsSmoked": 10,
+        "multiplier": 1.2,
+        "heartDiseasePct": 10.6,
+        "strokePct": 4.9,
+        "lungDiseasePct": 20.9
+      },
+      {
+        "yearsSmoked": 20,
+        "multiplier": 1.4,
+        "heartDiseasePct": 12.3,
+        "strokePct": 5.7,
+        "lungDiseasePct": 24.4
+      },
+      {
+        "yearsSmoked": 30,
+        "multiplier": 1.6,
+        "heartDiseasePct": 14.1,
+        "strokePct": 6.6,
+        "lungDiseasePct": 27.8
+      },
+      {
+        "yearsSmoked": 40,
+        "multiplier": 1.8,
+        "heartDiseasePct": 15.8,
+        "strokePct": 7.4,
+        "lungDiseasePct": 31.3
+      },
+      {
+        "yearsSmoked": 50,
+        "multiplier": 2,
+        "heartDiseasePct": 17.6,
+        "strokePct": 8.2,
+        "lungDiseasePct": 34.8
+      },
+      {
+        "yearsSmoked": 60,
+        "multiplier": 2.2,
+        "heartDiseasePct": 19.4,
+        "strokePct": 9,
+        "lungDiseasePct": 38.3
+      }
+    ]
+  },
+  "21_30": {
+    "baseStats": {
+      "totalPeople": 42,
+      "withYearsEstimate": 40,
+      "totalYears": 1266,
+      "avgYearsSmoked": 31.6,
+      "heartDiseaseYes": 2,
+      "heartDiseaseAnswered": 41,
+      "strokeYes": 2,
+      "strokeAnswered": 42,
+      "lungDiseaseYes": 10,
+      "lungDiseaseAnswered": 42,
+      "heartDiseasePct": 4.9,
+      "strokePct": 4.8,
+      "lungDiseasePct": 23.8
+    },
+    "timeline": [
+      {
+        "yearsSmoked": 10,
+        "multiplier": 1.2,
+        "heartDiseasePct": 5.9,
+        "strokePct": 5.8,
+        "lungDiseasePct": 28.6
+      },
+      {
+        "yearsSmoked": 20,
+        "multiplier": 1.4,
+        "heartDiseasePct": 6.9,
+        "strokePct": 6.7,
+        "lungDiseasePct": 33.3
+      },
+      {
+        "yearsSmoked": 30,
+        "multiplier": 1.6,
+        "heartDiseasePct": 7.8,
+        "strokePct": 7.7,
+        "lungDiseasePct": 38.1
+      },
+      {
+        "yearsSmoked": 40,
+        "multiplier": 1.8,
+        "heartDiseasePct": 8.8,
+        "strokePct": 8.6,
+        "lungDiseasePct": 42.8
+      },
+      {
+        "yearsSmoked": 50,
+        "multiplier": 2,
+        "heartDiseasePct": 9.8,
+        "strokePct": 9.6,
+        "lungDiseasePct": 47.6
+      },
+      {
+        "yearsSmoked": 60,
+        "multiplier": 2.2,
+        "heartDiseasePct": 10.8,
+        "strokePct": 10.6,
+        "lungDiseasePct": 52.4
+      }
+    ]
+  },
+  "31_plus": {
+    "baseStats": {
+      "totalPeople": 18,
+      "withYearsEstimate": 17,
+      "totalYears": 623,
+      "avgYearsSmoked": 36.6,
+      "heartDiseaseYes": 4,
+      "heartDiseaseAnswered": 18,
+      "strokeYes": 1,
+      "strokeAnswered": 18,
+      "lungDiseaseYes": 6,
+      "lungDiseaseAnswered": 18,
+      "heartDiseasePct": 22.2,
+      "strokePct": 5.6,
+      "lungDiseasePct": 33.3
+    },
+    "timeline": [
+      {
+        "yearsSmoked": 10,
+        "multiplier": 1.2,
+        "heartDiseasePct": 26.6,
+        "strokePct": 6.7,
+        "lungDiseasePct": 40
+      },
+      {
+        "yearsSmoked": 20,
+        "multiplier": 1.4,
+        "heartDiseasePct": 31.1,
+        "strokePct": 7.8,
+        "lungDiseasePct": 46.6
+      },
+      {
+        "yearsSmoked": 30,
+        "multiplier": 1.6,
+        "heartDiseasePct": 35.5,
+        "strokePct": 9,
+        "lungDiseasePct": 53.3
+      },
+      {
+        "yearsSmoked": 40,
+        "multiplier": 1.8,
+        "heartDiseasePct": 40,
+        "strokePct": 10.1,
+        "lungDiseasePct": 59.9
+      },
+      {
+        "yearsSmoked": 50,
+        "multiplier": 2,
+        "heartDiseasePct": 44.4,
+        "strokePct": 11.2,
+        "lungDiseasePct": 66.6
+      },
+      {
+        "yearsSmoked": 60,
+        "multiplier": 2.2,
+        "heartDiseasePct": 48.8,
+        "strokePct": 12.3,
+        "lungDiseasePct": 73.3
+      }
+    ]
+  }
+}
