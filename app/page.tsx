@@ -113,6 +113,10 @@ function calculateForYear(form: FormData, year: number): YearData {
   };
 }
 
+function formatRisk(value: number) {
+  return `${value.toFixed(1)}% estimated risk`;
+}
+
 // ─── Step Indicator ────────────────────────────────────────────────────────────
 
 function StepIndicator({ current }: { current: Step }) {
@@ -375,11 +379,13 @@ const TICKS = [0, 10, 20, 30]; /* was [0, 5, 10, 15, 20, 25, 30] */
 function TimelineStep({
   form,
   photo,
+  riskData,
   onEdit,
   onReset,
 }: {
   form: FormData;
   photo: string | null;
+  riskData: any; 
   onEdit: () => void;
   onReset: () => void;
 }) {
@@ -395,7 +401,47 @@ function TimelineStep({
   const totalPastCigs = Math.round(cpd * 365 * yrs);
   const packYears     = Math.round((cpd / 20) * yrs * 10) / 10;
 
-  const entry = calculateForYear(form, selectedYear);
+
+console.log('riskData:', riskData);
+console.log('selectedYear:', selectedYear);
+console.log('timeline:', riskData?.timeline);
+
+if (!riskData) {
+  return (
+    <div className="min-h-screen bg-[#09090f] text-white flex items-center justify-center">
+      Loading timeline...
+    </div>
+  );
+}
+
+const rawEntry =
+  riskData?.timeline?.find(
+    (t: any) => Number(t.yearOffset) === Number(selectedYear)
+  ) || riskData?.timeline?.[0];
+
+if (!rawEntry) {
+  return (
+    <div className="min-h-screen bg-[#09090f] text-white flex items-center justify-center">
+      No timeline data available.
+    </div>
+  );
+}
+
+const cigarettesSmoked = Math.round(cpd * 365 * selectedYear);
+const co2Kg = Math.round((cigarettesSmoked * 14) / 1000);
+const waterUsedL = Math.round(cigarettesSmoked * 3.7);
+const moneySpent = Math.round((cigarettesSmoked / 20) * 14);
+
+const entry = {
+  ...rawEntry,
+  accentColor: accentForYear(selectedYear),
+  milestone: getMilestone(selectedYear).milestone,
+  milestoneDetail: getMilestone(selectedYear).detail,
+
+  co2Kg,
+  waterUsedL,
+  moneySpent,
+};
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#09090f' }}>
@@ -626,82 +672,120 @@ function TimelineStep({
               </div>
             </div>}
 
-            {/* ── Right: data (full-width when no photo) ── */}
-            <div className="flex flex-col justify-between p-6" style={{ width: photo ? '50%' : '100%' }}>
 
-              {/* Title + description */}
-              <div className="mb-5">
-                <h2 className="text-white font-semibold text-lg mb-1">{entry.milestone}</h2>
-                <p className="text-zinc-500 text-sm leading-relaxed">{entry.milestoneDetail}</p>
-              </div>
+{/* ── Right: data (full-width when no photo) ── */}
+<div className="flex flex-col justify-between p-6" style={{ width: photo ? '50%' : '100%' }}>
+  {/* Title + description */}
+  <div className="mb-5">
+    <h2 className="text-white font-semibold text-lg mb-1">{entry.milestone}</h2>
+    <p className="text-zinc-500 text-sm leading-relaxed">
+      {entry.milestoneDetail}
+    </p>
+    <p className="text-zinc-600 text-xs mt-2">
+      Estimated smoking-related risks at this point in the timeline.
+    </p>
+  </div>
 
-              {/* Health bars */}
-              <div className="space-y-3 mb-5">
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-zinc-500 text-xs">Health Score</span>
-                    <span className="text-white font-bold text-sm tabular-nums">{entry.healthScore}%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{ width: `${entry.healthScore}%`, backgroundColor: entry.accentColor }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-zinc-500 text-xs">Lung Capacity</span>
-                    <span className="text-white font-bold text-sm tabular-nums">{entry.lungCapacity}%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{ width: `${entry.lungCapacity}%`, backgroundColor: entry.accentColor }}
-                    />
-                  </div>
-                </div>
-              </div>
+  {/* Health risks */}
+  <div className="space-y-3 mb-5">
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-zinc-500 text-xs">Heart disease risk</span>
+        <span className="text-white font-bold text-sm tabular-nums">
+          {formatRisk(entry.heartDiseasePct)}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${Math.min(entry.heartDiseasePct, 100)}%`,
+            backgroundColor: entry.accentColor,
+          }}
+        />
+      </div>
+    </div>
 
-              {/* Stats grid */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-                  <div className="text-zinc-600 text-xs mb-0.5">Heart Risk</div>
-                  <div className="text-white text-sm font-medium">{entry.heartRisk}</div>
-                </div>
-                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-                  <div className="text-zinc-600 text-xs mb-0.5">
-                    {selectedYear === 0 ? 'Annual CO₂' : 'CO₂ Added'}
-                  </div>
-                  <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
-                    {selectedYear === 0
-                      ? `${Math.round((cpd * 365 * 14) / 1000)} kg/yr`
-                      : `${entry.co2Kg.toLocaleString()} kg`}
-                  </div>
-                </div>
-                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-                  <div className="text-zinc-600 text-xs mb-0.5">Water Used</div>
-                  <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
-                    {selectedYear === 0
-                      ? `${Math.round((cpd * 365 * 3.7) / 1000)} kL/yr`
-                      : entry.waterUsedL > 999
-                      ? `${Math.round(entry.waterUsedL / 1000)} kL`
-                      : `${entry.waterUsedL} L`}
-                  </div>
-                </div>
-                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-                  <div className="text-zinc-600 text-xs mb-0.5">Money Spent</div>
-                  <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
-                    {selectedYear === 0
-                      ? `$${Math.round((cpd / 20) * 365 * 14).toLocaleString()}/yr`
-                      : `$${entry.moneySpent.toLocaleString()}`}
-                  </div>
-                </div>
-              </div>
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-zinc-500 text-xs">Stroke risk</span>
+        <span className="text-white font-bold text-sm tabular-nums">
+          {formatRisk(entry.strokePct)}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${Math.min(entry.strokePct, 100)}%`,
+            backgroundColor: entry.accentColor,
+          }}
+        />
+      </div>
+    </div>
 
-            </div>
-          </div>
-        </div>
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-zinc-500 text-xs">Lung disease risk</span>
+        <span className="text-white font-bold text-sm tabular-nums">
+          {formatRisk(entry.lungDiseasePct)}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
+        <div
+          className="h-full rounded-full transition-all duration-300"
+          style={{
+            width: `${Math.min(entry.lungDiseasePct, 100)}%`,
+            backgroundColor: entry.accentColor,
+          }}
+        />
+      </div>
+    </div>
+  </div>
+
+  {/* Stats grid */}
+  <div className="grid grid-cols-2 gap-2">
+    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+      <div className="text-zinc-600 text-xs mb-0.5">Risk summary</div>
+      <div className="text-white text-sm font-medium">
+        {entry.heartDiseasePct.toFixed(1)}% heart · {entry.strokePct.toFixed(1)}% stroke
+      </div>
+    </div>
+
+    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+      <div className="text-zinc-600 text-xs mb-0.5">
+        {selectedYear === 0 ? 'Annual CO₂' : 'CO₂ Added'}
+      </div>
+      <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
+        {selectedYear === 0
+          ? `${Math.round((cpd * 365 * 14) / 1000)} kg/yr`
+          : `${entry.co2Kg.toLocaleString()} kg`}
+      </div>
+    </div>
+
+    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+      <div className="text-zinc-600 text-xs mb-0.5">Water Used</div>
+      <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
+        {selectedYear === 0
+          ? `${Math.round((cpd * 365 * 3.7) / 1000)} kL/yr`
+          : entry.waterUsedL > 999
+          ? `${Math.round(entry.waterUsedL / 1000)} kL`
+          : `${entry.waterUsedL} L`}
+      </div>
+    </div>
+
+    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+      <div className="text-zinc-600 text-xs mb-0.5">Money Spent</div>
+      <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
+        {selectedYear === 0
+          ? `$${Math.round((cpd / 20) * 365 * 14).toLocaleString()}/yr`
+          : `$${entry.moneySpent.toLocaleString()}`}
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
 
         {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
@@ -762,6 +846,31 @@ export default function Home() {
   const [step, setStep]   = useState<Step>('upload');
   const [photo, setPhoto] = useState<string | null>(null);
   const [form, setForm]   = useState<FormData>({ age: '', yearsSmoked: '', cigarettesPerDay: '' });
+  const [riskData, setRiskData] = useState<any>(null);
+
+  const handleTimelineSubmit = async () => {
+  try {
+    const res = await fetch('http://localhost:4000/api/statscalc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        age: Number(form.age),
+        yearsSmoked: Number(form.yearsSmoked),
+        cigarettesPerDay: Number(form.cigarettesPerDay),
+      }),
+    });
+
+    const json = await res.json();
+
+    console.log('API response:', json);
+
+    setRiskData(json.data); // ✅ THIS is what fixes your loading screen
+    setStep('timeline');    // move AFTER data is ready
+
+  } catch (err) {
+    console.error('Failed to fetch timeline:', err);
+  }
+};
 
   if (step === 'upload') {
     return <UploadStep photo={photo} onPhoto={setPhoto} onNext={() => setStep('form')} />;
@@ -773,21 +882,22 @@ export default function Home() {
         form={form}
         onChange={setForm}
         onBack={() => setStep('upload')}
-        onNext={() => setStep('timeline')}
+        onNext={handleTimelineSubmit}
       />
     );
   }
 
   return (
-    <TimelineStep
-      form={form}
-      photo={photo}
-      onEdit={() => setStep('form')}
-      onReset={() => {
-        setStep('upload');
-        setPhoto(null);
-        setForm({ age: '', yearsSmoked: '', cigarettesPerDay: '' });
-      }}
-    />
+<TimelineStep
+  form={form}
+  photo={photo}
+  riskData={riskData}
+  onEdit={() => setStep('form')}
+  onReset={() => {
+    setStep('upload');
+    setPhoto(null);
+    setForm({ age: '', yearsSmoked: '', cigarettesPerDay: '' });
+  }}
+/>
   );
 }
