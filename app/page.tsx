@@ -509,8 +509,8 @@ function TimelineStep({
         >
           <div className="flex flex-col sm:flex-row" style={{ minHeight: 380 }}>
 
-            {/* ── Left: flip card ── */}
-            <div
+            {/* ── Left: flip card (only when a photo was uploaded) ── */}
+            {photo && <div
               className="relative flex flex-col items-center justify-center sm:w-1/2"
               style={{ backgroundColor: '#0e0e14', borderRight: '1px solid #1c1c22', minHeight: 300, padding: '24px 0 64px' }}
             >
@@ -624,10 +624,10 @@ function TimelineStep({
               >
                 {selectedYear === 0 ? 'Today' : `+${selectedYear} years`}
               </div>
-            </div>
+            </div>}
 
-            {/* ── Right: data ── */}
-            <div className="flex flex-col justify-between sm:w-1/2 p-6">
+            {/* ── Right: data (full-width when no photo) ── */}
+            <div className="flex flex-col justify-between p-6" style={{ width: photo ? '50%' : '100%' }}>
 
               {/* Title + description */}
               <div className="mb-5">
