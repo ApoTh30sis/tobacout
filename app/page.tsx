@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { analyzeSmokingRisk } from './api/auth/smokingRisk';
+import { useState, useRef } from 'react';
+import type { RiskTimelinePoint, RiskTimelineResult, SmokingAnalysisResult } from './api/auth/smokingRisk';
 import guy1Image from './people/guy1.png';
 
 type Step = 'upload' | 'form' | 'timeline';
@@ -11,29 +11,18 @@ interface FormData {
   yearsSmoked: string;
   cigarettesPerDay: string;
   pricePerPack: string;
+  state: string;
 }
 
-interface YearData {
-  year: number;
-  healthScore: number;
-  lungCapacity: number;
-  heartRisk: string;
-  co2Kg: number;
-  cigarettesSmoked: number;
-  waterUsedL: number;
-  kgramsLittered: number;
+type TimelineEntryView = RiskTimelinePoint & {
+  accentColor: string;
   milestone: string;
   milestoneDetail: string;
-  accentColor: string;
-}
-
-
-function formatLiters(value: number) {
-  if (value >= 1000) {
-    return `${Math.round(value / 1000)} kL`;
-  }
-  return `${Math.round(value)} L`;
-}
+  cigarettesSmoked: number;
+  co2Kg: number;
+  waterUsedL: number;
+  kgramsLittered: number;
+};
 
 function getMoneyComparison(amount: number) {
   if (amount >= 300000) return 'This money could have gone toward a house or major investment';
@@ -110,58 +99,6 @@ function getMilestone(year: number): { milestone: string; detail: string } {
   if (year <= 20)  return { milestone: 'Severe Long-term Damage',   detail: 'Major organ damage compounding. Life expectancy impact now measured in years, not months.' };
   if (year <= 25)  return { milestone: 'Critical Stage',            detail: 'Irreversible damage to airways, arteries, and lung tissue. Quality of life significantly impacted.' };
   return { milestone: 'Maximum Risk Zone', detail: `${year} more years of smoking. The cumulative toll is severe. It is still not too late to stop.` };
-}
-
-function calculateForYear(form: FormData, year: number): YearData {
-  const yearsSmoked = parseFloat(form.yearsSmoked) || 1;
-  const cpd         = parseFloat(form.cigarettesPerDay) || 10;
-  const age         = parseInt(form.age) || 30;
-
-  const CO2_PER_CIG_G   = 14;   // g CO2e per cigarette (full lifecycle)
-  const WATER_PER_CIG_L = 3.7;  // litres per cigarette
-  const WEIGHT_PER_CIG_BUTT = 0.0003; //kg per cigarette butt
-  const PERCENTAGE_LITTERED = 0.75; // 75% of butts are littered
-
-
-  const annualCigs = cpd * 365;
-  const totalCigs = (cpd) * (yearsSmoked + year); // cumulative at this point
-
-  const baseHealth   = Math.max(20, 85 - ((cpd / 20) * yearsSmoked) * 2.5 - Math.max(0, age - 40) * 0.5);
-  const healthScore  = Math.max(10, Math.round(baseHealth - year * 1.8));
-  const lungBase     = Math.max(40, 95 - ((cpd / 20) * yearsSmoked) * 3.5);
-  const lungCapacity = Math.max(20, Math.round(lungBase - year * 1.6));
-
-  const heartRisk =
-    year === 0  ? 'Elevated' :
-    year <= 3   ? 'Elevated and rising' :
-    year <= 8   ? 'High' :
-    year <= 15  ? 'Very high' :
-                  'Severe';
-
-  const cigarettesSmoked = Math.round(annualCigs * year);
-  const co2Kg            = Math.round((cigarettesSmoked * CO2_PER_CIG_G) / 1000 * 10) / 10;
-  const waterUsedL       = Math.round(cigarettesSmoked * WATER_PER_CIG_L);
-  const kgramsLittered    = Math.round(cigarettesSmoked * WEIGHT_PER_CIG_BUTT * PERCENTAGE_LITTERED);
-
-  const { milestone, detail: milestoneDetail } = getMilestone(year);
-
-  return {
-    year,
-    healthScore,
-    lungCapacity,
-    heartRisk,
-    co2Kg,
-    cigarettesSmoked,
-    waterUsedL,
-    kgramsLittered,
-    milestone,
-    milestoneDetail,
-    accentColor: accentForYear(year),
-  };
-}
-
-function formatRisk(value: number) {
-  return `${value.toFixed(1)}% estimated risk`;
 }
 
 // ─── US States list ────────────────────────────────────────────────────────────
@@ -244,12 +181,12 @@ function UploadStep({
     reader.readAsDataURL(file);
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
-  }, []);
+  };
 
   return (
     <div className="min-h-screen bg-[#09090f] flex flex-col items-center justify-center p-6">
@@ -362,7 +299,8 @@ const isValid =
   form.age &&
   form.yearsSmoked &&
   form.cigarettesPerDay &&
-  form.pricePerPack;
+  form.pricePerPack &&
+  form.state;
 
   const field = (
     label: string,
@@ -393,6 +331,33 @@ const isValid =
     </div>
   );
 
+  const stateField = (
+    <div>
+      <label className="block text-sm font-medium mb-2" style={{ color: '#d4d4d8' }}>State</label>
+      <div className="relative">
+        <select
+          value={form.state}
+          onChange={(e) => onChange({ ...form, state: e.target.value })}
+          className="w-full rounded-xl px-4 py-3 text-white text-sm outline-none appearance-none"
+          style={{ backgroundColor: '#18181b', border: '1px solid #3f3f46' }}
+          onFocus={(e)  => (e.currentTarget.style.borderColor = '#f59e0b')}
+          onBlur={(e)   => (e.currentTarget.style.borderColor = '#3f3f46')}
+        >
+          <option value="" disabled>Select your state</option>
+          {US_STATES.map(([abbr, name]) => (
+            <option key={abbr} value={abbr}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 text-xs">
+          USA
+        </span>
+      </div>
+      <p className="text-zinc-600 text-xs mt-1.5">Used to fetch CDC PLACES heart disease data for your state.</p>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-[#09090f] flex flex-col items-center justify-center p-6">
       <div className="mb-8 text-center">
@@ -411,6 +376,7 @@ const isValid =
           </p>
           <div className="space-y-5">
             {field('Your Current Age',   'age',              '35', undefined,                'yrs')}
+            {stateField}
             {field('Years Smoking',      'yearsSmoked',      '10', 'Decimals OK — e.g. 2.5', 'yrs')}
             {field('Cigarettes Per Day', 'cigarettesPerDay', '10', '1 pack ≈ 20 cigarettes', 'cigs/day')}
             {field('Price Per Pack',     'pricePerPack',     '10', 'Used to estimate total money spent over time', '$ / pack')}
@@ -478,20 +444,14 @@ function TimelineStep({
   form: FormData;
   photo: string | null;
   generatedPhotos: Record<number, string>;
-  riskData: any;
+  riskData: RiskTimelineResult | null;
   onEdit: () => void;
   onReset: () => void;
 }) {
   const [selectedYear, setSelectedYear] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-
-  useEffect(() => {
-    setIsFlipped(false);
-  }, [selectedYear]);
 
   const cpd = parseFloat(form.cigarettesPerDay) || 10;
   const yrs = parseFloat(form.yearsSmoked) || 1;
-  const packYears = Math.round((cpd / 20) * yrs * 10) / 10;
   const pricePerPack = parseFloat(form.pricePerPack) || 0;
 
   if (!riskData) {
@@ -504,7 +464,7 @@ function TimelineStep({
 
   const rawEntry =
     riskData?.timeline?.find(
-      (t: any) => Number(t.yearOffset) === Number(selectedYear)
+      (t: RiskTimelinePoint) => Number(t.yearOffset) === Number(selectedYear)
     ) || riskData?.timeline?.[0];
 
   if (!rawEntry) {
@@ -529,7 +489,7 @@ function TimelineStep({
   const kgramsLittered =
     Math.round(cigarettesSmoked * 0.0003 * 0.75 * 100) / 100;
 
-  const entry = {
+  const entry: TimelineEntryView = {
     ...rawEntry,
     accentColor: accentForYear(selectedYear),
     milestone: getMilestone(selectedYear).milestone,
@@ -556,6 +516,9 @@ function TimelineStep({
               <h1 className="text-xl font-bold text-white leading-tight">
                 Tobac<span style={{ color: '#f59e0b' }}>out</span>
               </h1>
+              <p className="text-xs text-zinc-500 mt-1">
+                {riskData?.state ? `CDC CHD baseline: ${riskData.state}` : ''}
+              </p>
             </div>
             <button
               onClick={onEdit}
@@ -908,9 +871,10 @@ const [form, setForm] = useState<FormData>({
   yearsSmoked: '',
   cigarettesPerDay: '',
   pricePerPack: '',
+  state: '',
 });
 
-  const [riskData, setRiskData] = useState<any>(null);
+  const [riskData, setRiskData] = useState<RiskTimelineResult | null>(null);
   const [generatedPhotos, setGeneratedPhotos] = useState<Record<number, string>>({});
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -959,11 +923,25 @@ const [form, setForm] = useState<FormData>({
   try {
     await new Promise((r) => setTimeout(r, 1200)); // simulate network delay
 
-    const result = await analyzeSmokingRisk({
-      age: form.age,
-      yearsSmoked: form.yearsSmoked,
-      cigarettesPerDay: form.cigarettesPerDay,
+    const response = await fetch('/api/auth/statRouter', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        age: form.age,
+        yearsSmoked: form.yearsSmoked,
+        cigarettesPerDay: form.cigarettesPerDay,
+        state: form.state,
+      }),
     });
+    const result: SmokingAnalysisResult = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.success ? 'Failed to build smoking risk timeline.' : result.error
+      );
+    }
 
     if (result.success) {
       setRiskData(result.data);
@@ -1044,6 +1022,7 @@ return (
         yearsSmoked: '',
         cigarettesPerDay: '',
         pricePerPack: '',
+        state: '',
       });
       setGeneratedPhotos({});
     }}

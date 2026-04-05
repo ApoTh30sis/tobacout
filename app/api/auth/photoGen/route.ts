@@ -25,9 +25,9 @@ export async function POST(req: NextRequest) {
 
         const model = genAI.getGenerativeModel({model: "gemini-3.1-flash-image-preview"});
 
-        let packYears = (cigs/20)*(pastYears+futureYears); // Calculating the exposure
+        const packYears = (cigs/20)*(pastYears+futureYears); // Calculating the exposure
 
-        let k = Math.log(10)/60; // Growth Factor (calculated based on the fact that intensity maxes out 60)
+        const k = Math.log(10)/60; // Growth Factor (calculated based on the fact that intensity maxes out 60)
 
         let intensity = Math.exp(k*packYears); // intensity function on a scale of 10
 
