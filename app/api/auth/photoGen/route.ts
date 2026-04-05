@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
         const futureYears = Number(body.get('futureYears'));
         const userPhoto = body.get('userPhoto') as File;
 
+        if (! process.env.GEMINI_API_KEY){
+            return NextResponse.json({ error: "Missing API key" }, {status: 501});
+        }
+
         if (!userPhoto){
             return NextResponse.json({ error: "No file uploaded" }, {status: 400});
         
@@ -63,7 +67,7 @@ export async function POST(req: NextRequest) {
         
         if (!generatedImages || generatedImages.length === 0)
         {
-            return NextResponse.json({error: "No Images were generated"}, {status: 500});
+            return NextResponse.json({error: "No Images were generated"}, {status: 503});
         }
         
 
@@ -71,7 +75,7 @@ export async function POST(req: NextRequest) {
     }
     catch (error) {
         console.error("Gemini error: ", error);
-        return NextResponse.json({error: "Internal Server Error"}, {status: 500});
+        return NextResponse.json({error: "Internal Server Error"}, {status: 502});
     }
         
 }
