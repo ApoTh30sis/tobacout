@@ -8,6 +8,7 @@ interface FormData {
   age: string;
   yearsSmoked: string;
   cigarettesPerDay: string;
+  stateabbr: string; // NEW
 }
 
 interface YearData {
@@ -38,10 +39,10 @@ function lerpColor(a: string, b: string, t: number): string {
 
 function accentForYear(year: number): string {
   const stops: [number, string][] = [
-    [0,  '#71717a'], // zinc-500 — neutral
-    [8,  '#f97316'], // orange
-    [18, '#ef4444'], // red
-    [30, '#7f1d1d'], // dark red
+    [0,  '#71717a'],
+    [8,  '#f97316'],
+    [18, '#ef4444'],
+    [30, '#7f1d1d'],
   ];
   for (let i = 0; i < stops.length - 1; i++) {
     const [y0, c0] = stops[i];
@@ -52,14 +53,14 @@ function accentForYear(year: number): string {
 }
 
 function getMilestone(year: number): { milestone: string; detail: string } {
-  if (year === 0)  return { milestone: 'Today',                   detail: 'This is where you are now. Every year on this line is another year of continued damage.' };
+  if (year === 0)  return { milestone: 'Today',                     detail: 'This is where you are now. Every year on this line is another year of continued damage.' };
   if (year <= 2)   return { milestone: 'Early Damage Accumulating', detail: 'Lung cilia remain suppressed. Carbon monoxide binding to red blood cells. Elevated cardiovascular strain.' };
-  if (year <= 5)   return { milestone: 'Cardiovascular Strain',   detail: 'Blood vessel walls thickening. Reduced circulation. Resting heart rate and blood pressure elevated.' };
-  if (year <= 8)   return { milestone: 'Lung Function Declining', detail: 'FEV1 lung capacity measurably reduced. Chronic cough common. Increased respiratory infections.' };
-  if (year <= 12)  return { milestone: 'Compounding Health Debt', detail: 'Pack-year count in dangerous territory. Cancer risk rising. Heart disease risk significantly elevated.' };
-  if (year <= 16)  return { milestone: 'Serious Health Risk',     detail: 'Lung cancer risk multiplied. COPD likelihood high. Peripheral vascular disease a real concern.' };
-  if (year <= 20)  return { milestone: 'Severe Long-term Damage', detail: 'Major organ damage compounding. Life expectancy impact now measured in years, not months.' };
-  if (year <= 25)  return { milestone: 'Critical Stage',          detail: 'Irreversible damage to airways, arteries, and lung tissue. Quality of life significantly impacted.' };
+  if (year <= 5)   return { milestone: 'Cardiovascular Strain',     detail: 'Blood vessel walls thickening. Reduced circulation. Resting heart rate and blood pressure elevated.' };
+  if (year <= 8)   return { milestone: 'Lung Function Declining',   detail: 'FEV1 lung capacity measurably reduced. Chronic cough common. Increased respiratory infections.' };
+  if (year <= 12)  return { milestone: 'Compounding Health Debt',   detail: 'Pack-year count in dangerous territory. Cancer risk rising. Heart disease risk significantly elevated.' };
+  if (year <= 16)  return { milestone: 'Serious Health Risk',       detail: 'Lung cancer risk multiplied. COPD likelihood high. Peripheral vascular disease a real concern.' };
+  if (year <= 20)  return { milestone: 'Severe Long-term Damage',   detail: 'Major organ damage compounding. Life expectancy impact now measured in years, not months.' };
+  if (year <= 25)  return { milestone: 'Critical Stage',            detail: 'Irreversible damage to airways, arteries, and lung tissue. Quality of life significantly impacted.' };
   return { milestone: 'Maximum Risk Zone', detail: `${year} more years of smoking. The cumulative toll is severe. It is still not too late to stop.` };
 }
 
@@ -68,19 +69,15 @@ function calculateForYear(form: FormData, year: number): YearData {
   const cpd         = parseFloat(form.cigarettesPerDay) || 10;
   const age         = parseInt(form.age) || 30;
 
-  const CO2_PER_CIG_G   = 14;   // g CO2e per cigarette (full lifecycle)
-  const WATER_PER_CIG_L = 3.7;  // litres per cigarette
-  const PACK_PRICE      = 14;   // $ per pack
+  const CO2_PER_CIG_G   = 14;
+  const WATER_PER_CIG_L = 3.7;
+  const PACK_PRICE      = 14;
 
   const annualCigs = cpd * 365;
-  const totalPackYears = (cpd / 20) * (yearsSmoked + year); // cumulative at this point
 
-  // Health score: already degraded at year 0, worsens each year
-  const baseHealth = Math.max(20, 85 - ((cpd / 20) * yearsSmoked) * 2.5 - Math.max(0, age - 40) * 0.5);
-  const healthScore = Math.max(10, Math.round(baseHealth - year * 1.8));
-
-  // Lung capacity: already reduced, keeps declining
-  const lungBase    = Math.max(40, 95 - ((cpd / 20) * yearsSmoked) * 3.5);
+  const baseHealth   = Math.max(20, 85 - ((cpd / 20) * yearsSmoked) * 2.5 - Math.max(0, age - 40) * 0.5);
+  const healthScore  = Math.max(10, Math.round(baseHealth - year * 1.8));
+  const lungBase     = Math.max(40, 95 - ((cpd / 20) * yearsSmoked) * 3.5);
   const lungCapacity = Math.max(20, Math.round(lungBase - year * 1.6));
 
   const heartRisk =
@@ -90,7 +87,6 @@ function calculateForYear(form: FormData, year: number): YearData {
     year <= 15  ? 'Very high' :
                   'Severe';
 
-  // Cumulative from continued smoking (year 0 = today, no past added here)
   const cigarettesSmoked = Math.round(annualCigs * year);
   const co2Kg            = Math.round((cigarettesSmoked * CO2_PER_CIG_G) / 1000 * 10) / 10;
   const waterUsedL       = Math.round(cigarettesSmoked * WATER_PER_CIG_L);
@@ -99,16 +95,9 @@ function calculateForYear(form: FormData, year: number): YearData {
   const { milestone, detail: milestoneDetail } = getMilestone(year);
 
   return {
-    year,
-    healthScore,
-    lungCapacity,
-    heartRisk,
-    co2Kg,
-    cigarettesSmoked,
-    waterUsedL,
-    moneySpent,
-    milestone,
-    milestoneDetail,
+    year, healthScore, lungCapacity, heartRisk,
+    co2Kg, cigarettesSmoked, waterUsedL, moneySpent,
+    milestone, milestoneDetail,
     accentColor: accentForYear(year),
   };
 }
@@ -116,6 +105,24 @@ function calculateForYear(form: FormData, year: number): YearData {
 function formatRisk(value: number) {
   return `${value.toFixed(1)}% estimated risk`;
 }
+
+// ─── US States list ────────────────────────────────────────────────────────────
+
+const US_STATES = [
+  ['AL', 'Alabama'], ['AK', 'Alaska'], ['AZ', 'Arizona'], ['AR', 'Arkansas'],
+  ['CA', 'California'], ['CO', 'Colorado'], ['CT', 'Connecticut'], ['DE', 'Delaware'],
+  ['FL', 'Florida'], ['GA', 'Georgia'], ['HI', 'Hawaii'], ['ID', 'Idaho'],
+  ['IL', 'Illinois'], ['IN', 'Indiana'], ['IA', 'Iowa'], ['KS', 'Kansas'],
+  ['KY', 'Kentucky'], ['LA', 'Louisiana'], ['ME', 'Maine'], ['MD', 'Maryland'],
+  ['MA', 'Massachusetts'], ['MI', 'Michigan'], ['MN', 'Minnesota'], ['MS', 'Mississippi'],
+  ['MO', 'Missouri'], ['MT', 'Montana'], ['NE', 'Nebraska'], ['NV', 'Nevada'],
+  ['NH', 'New Hampshire'], ['NJ', 'New Jersey'], ['NM', 'New Mexico'], ['NY', 'New York'],
+  ['NC', 'North Carolina'], ['ND', 'North Dakota'], ['OH', 'Ohio'], ['OK', 'Oklahoma'],
+  ['OR', 'Oregon'], ['PA', 'Pennsylvania'], ['RI', 'Rhode Island'], ['SC', 'South Carolina'],
+  ['SD', 'South Dakota'], ['TN', 'Tennessee'], ['TX', 'Texas'], ['UT', 'Utah'],
+  ['VT', 'Vermont'], ['VA', 'Virginia'], ['WA', 'Washington'], ['WV', 'West Virginia'],
+  ['WI', 'Wisconsin'], ['WY', 'Wyoming'],
+] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────────
 
@@ -184,7 +191,6 @@ function UploadStep({
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) handleFile(file);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -283,13 +289,15 @@ function FormStep({
   onChange,
   onBack,
   onNext,
+  isLoading, // NEW
 }: {
   form: FormData;
   onChange: (f: FormData) => void;
   onBack: () => void;
   onNext: () => void;
+  isLoading: boolean; // NEW
 }) {
-  const isValid = form.age && form.yearsSmoked && form.cigarettesPerDay;
+  const isValid = form.age && form.yearsSmoked && form.cigarettesPerDay && form.stateabbr;
 
   const field = (
     label: string,
@@ -337,15 +345,45 @@ function FormStep({
             Used to model your personalised health impact across 30 years.
           </p>
           <div className="space-y-5">
-            {field('Your Current Age',   'age',              '35', undefined,               'yrs')}
-            {field('Years Smoking',      'yearsSmoked',      '10', 'Decimals OK — e.g. 2.5','yrs')}
-            {field('Cigarettes Per Day', 'cigarettesPerDay', '10', '1 pack ≈ 20 cigarettes', 'cigs/day')}
+            {field('Your Current Age',   'age',              '35', undefined,                'yrs')}
+            {field('Years Smoking',      'yearsSmoked',      '10', 'Decimals OK — e.g. 2.5', 'yrs')}
+            {field('Cigarettes Per Day', 'cigarettesPerDay', '10', '1 pack ≈ 20 cigarettes',  'cigs/day')}
+
+            {/* ── State selector (NEW) ── */}
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{ color: '#d4d4d8' }}>
+                Your State
+              </label>
+              <select
+                value={form.stateabbr}
+                onChange={(e) => onChange({ ...form, stateabbr: e.target.value })}
+                className="w-full rounded-xl px-4 py-3 text-sm outline-none appearance-none"
+                style={{
+                  backgroundColor: '#18181b',
+                  border: '1px solid #3f3f46',
+                  color: form.stateabbr ? '#fff' : '#52525b',
+                }}
+                onFocus={(e)  => (e.currentTarget.style.borderColor = '#f59e0b')}
+                onBlur={(e)   => (e.currentTarget.style.borderColor = '#3f3f46')}
+              >
+                <option value="" disabled>Select your state</option>
+                {US_STATES.map(([abbr, name]) => (
+                  <option key={abbr} value={abbr} style={{ backgroundColor: '#18181b', color: '#fff' }}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-zinc-600 text-xs mt-1.5">
+                Used to pull real CDC health data for your area
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="flex gap-3 mt-5">
           <button
             onClick={onBack}
+            disabled={isLoading}
             className="flex-1 py-3.5 rounded-full text-sm font-medium"
             style={{ border: '1px solid #3f3f46', color: '#71717a' }}
             onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#71717a'; }}
@@ -355,15 +393,31 @@ function FormStep({
           </button>
           <button
             onClick={onNext}
-            disabled={!isValid}
-            className="flex-1 py-3.5 rounded-full text-sm font-semibold"
+            disabled={!isValid || isLoading}
+            className="flex-1 py-3.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2"
             style={{
-              backgroundColor: isValid ? '#f59e0b' : '#27272a',
-              color: isValid ? '#000' : '#52525b',
-              cursor: isValid ? 'pointer' : 'not-allowed',
+              backgroundColor: isValid && !isLoading ? '#f59e0b' : '#27272a',
+              color: isValid && !isLoading ? '#000' : '#52525b',
+              cursor: isValid && !isLoading ? 'pointer' : 'not-allowed',
             }}
           >
-            See My Timeline →
+            {isLoading ? (
+              <>
+                {/* Spinner */}
+                <svg
+                  className="animate-spin"
+                  style={{ width: 14, height: 14 }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                Fetching CDC data…
+              </>
+            ) : (
+              'See My Timeline →'
+            )}
           </button>
         </div>
       </div>
@@ -371,10 +425,10 @@ function FormStep({
   );
 }
 
-// ─── Timeline Step ─────────────────────────────────────────────────────────────
+// ─── Timeline Step (unchanged) ─────────────────────────────────────────────────
 
 const MAX_YEARS = 30;
-const TICKS = [0, 10, 20, 30]; /* was [0, 5, 10, 15, 20, 25, 30] */
+const TICKS = [0, 10, 20, 30];
 
 function TimelineStep({
   form,
@@ -385,7 +439,7 @@ function TimelineStep({
 }: {
   form: FormData;
   photo: string | null;
-  riskData: any; 
+  riskData: any;
   onEdit: () => void;
   onReset: () => void;
 }) {
@@ -401,47 +455,39 @@ function TimelineStep({
   const totalPastCigs = Math.round(cpd * 365 * yrs);
   const packYears     = Math.round((cpd / 20) * yrs * 10) / 10;
 
+  if (!riskData) {
+    return (
+      <div className="min-h-screen bg-[#09090f] text-white flex items-center justify-center">
+        Loading timeline...
+      </div>
+    );
+  }
 
-console.log('riskData:', riskData);
-console.log('selectedYear:', selectedYear);
-console.log('timeline:', riskData?.timeline);
+  const rawEntry =
+    riskData?.timeline?.find(
+      (t: any) => Number(t.yearOffset) === Number(selectedYear)
+    ) || riskData?.timeline?.[0];
 
-if (!riskData) {
-  return (
-    <div className="min-h-screen bg-[#09090f] text-white flex items-center justify-center">
-      Loading timeline...
-    </div>
-  );
-}
+  if (!rawEntry) {
+    return (
+      <div className="min-h-screen bg-[#09090f] text-white flex items-center justify-center">
+        No timeline data available.
+      </div>
+    );
+  }
 
-const rawEntry =
-  riskData?.timeline?.find(
-    (t: any) => Number(t.yearOffset) === Number(selectedYear)
-  ) || riskData?.timeline?.[0];
+  const cigarettesSmoked = Math.round(cpd * 365 * selectedYear);
+  const co2Kg            = Math.round((cigarettesSmoked * 14) / 1000);
+  const waterUsedL       = Math.round(cigarettesSmoked * 3.7);
+  const moneySpent       = Math.round((cigarettesSmoked / 20) * 14);
 
-if (!rawEntry) {
-  return (
-    <div className="min-h-screen bg-[#09090f] text-white flex items-center justify-center">
-      No timeline data available.
-    </div>
-  );
-}
-
-const cigarettesSmoked = Math.round(cpd * 365 * selectedYear);
-const co2Kg = Math.round((cigarettesSmoked * 14) / 1000);
-const waterUsedL = Math.round(cigarettesSmoked * 3.7);
-const moneySpent = Math.round((cigarettesSmoked / 20) * 14);
-
-const entry = {
-  ...rawEntry,
-  accentColor: accentForYear(selectedYear),
-  milestone: getMilestone(selectedYear).milestone,
-  milestoneDetail: getMilestone(selectedYear).detail,
-
-  co2Kg,
-  waterUsedL,
-  moneySpent,
-};
+  const entry = {
+    ...rawEntry,
+    accentColor: accentForYear(selectedYear),
+    milestone: getMilestone(selectedYear).milestone,
+    milestoneDetail: getMilestone(selectedYear).detail,
+    co2Kg, waterUsedL, moneySpent,
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#09090f' }}>
@@ -459,8 +505,10 @@ const entry = {
               <h1 className="text-xl font-bold text-white leading-tight">
                 Tobac<span style={{ color: '#f59e0b' }}>out</span>
               </h1>
+              {/* Show state name if available (NEW) */}
               <p className="text-zinc-500 text-sm">
                 {yrs}yr · {cpd} cigs/day · age {form.age} · {packYears} pack-years
+                {form.stateabbr ? ` · ${form.stateabbr} data` : ''}
               </p>
             </div>
             <button
@@ -474,7 +522,6 @@ const entry = {
             </button>
           </div>
 
-          {/* Past damage summary — small, subdued */}
           <div className="flex gap-6 mt-5 pt-5" style={{ borderTop: '1px solid #18181b' }}>
             {[
               { label: 'CO₂ emitted so far',  value: `${totalPastCO2.toLocaleString()} kg` },
@@ -493,26 +540,19 @@ const entry = {
 
       <div className="max-w-3xl mx-auto px-6 pt-10 pb-12">
 
-        {/* ── Timeline Bar ── */}
+        {/* Timeline Bar */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
             <span className="text-zinc-600 text-xs tracking-wide uppercase">
               Years from now if you continue smoking
             </span>
-            <span
-              className="text-sm font-semibold tabular-nums"
-              style={{ color: entry.accentColor }}
-            >
+            <span className="text-sm font-semibold tabular-nums" style={{ color: entry.accentColor }}>
               {selectedYear === 0 ? 'Today' : `+${selectedYear} years`}
             </span>
           </div>
 
-          {/* The line */}
           <div className="relative" style={{ paddingTop: 12, paddingBottom: 28 }}>
-            {/* Track line */}
             <div className="rounded-full" style={{ height: 2, backgroundColor: '#27272a' }} />
-
-            {/* Tick points — visual only */}
             {TICKS.map((t) => {
               const isSelected = t === selectedYear;
               const isPast     = t < selectedYear;
@@ -533,10 +573,7 @@ const entry = {
                       marginTop: isSelected ? 3 : 6,
                     }}
                   />
-                  <span
-                    className="text-xs mt-2 tabular-nums"
-                    style={{ color: isSelected ? tickColor : '#3f3f46' }}
-                  >
+                  <span className="text-xs mt-2 tabular-nums" style={{ color: isSelected ? tickColor : '#3f3f46' }}>
                     {t === 0 ? 'Now' : `${t}yr`}
                   </span>
                 </div>
@@ -545,247 +582,163 @@ const entry = {
           </div>
         </div>
 
-        {/* ── Detail Card ── */}
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            backgroundColor: '#111117',
-            border: `1px solid #1c1c22`,
-          }}
-        >
+        {/* Detail Card */}
+        <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: '#111117', border: '1px solid #1c1c22' }}>
           <div className="flex flex-col sm:flex-row" style={{ minHeight: 380 }}>
 
-            {/* ── Left: flip card (only when a photo was uploaded) ── */}
-            {photo && <div
-              className="relative flex flex-col items-center justify-center sm:w-1/2"
-              style={{ backgroundColor: '#0e0e14', borderRight: '1px solid #1c1c22', minHeight: 300, padding: '24px 0 64px' }}
-            >
-              {/* 3-D flip card */}
-              <div style={{ perspective: '1100px', width: '62%', aspectRatio: '3/4' }}>
+            {photo && (
+              <div
+                className="relative flex flex-col items-center justify-center sm:w-1/2"
+                style={{ backgroundColor: '#0e0e14', borderRight: '1px solid #1c1c22', minHeight: 300, padding: '24px 0 64px' }}
+              >
+                <div style={{ perspective: '1100px', width: '62%', aspectRatio: '3/4' }}>
+                  <div
+                    style={{
+                      position: 'relative', width: '100%', height: '100%',
+                      transformStyle: 'preserve-3d',
+                      transition: 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute', inset: 0,
+                        backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+                        borderRadius: 12, overflow: 'hidden',
+                        border: '1px dashed #2a2a33', backgroundColor: '#13131a',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      }}
+                    >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                      <span style={{ color: '#52525b', fontSize: 11, textAlign: 'center', padding: '0 16px', lineHeight: 1.5 }}>
+                        Photo 1<br />will appear here
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        position: 'absolute', inset: 0,
+                        backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)',
+                        borderRadius: 12, overflow: 'hidden',
+                        border: `1px dashed ${entry.accentColor}40`, backgroundColor: '#13131a',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
+                      }}
+                    >
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={entry.accentColor} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <path d="M21 15l-5-5L5 21" />
+                      </svg>
+                      <span style={{ color: '#52525b', fontSize: 11, textAlign: 'center', padding: '0 16px', lineHeight: 1.5 }}>
+                        Photo 2<br />will appear here
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setIsFlipped((f) => !f)}
+                  style={{
+                    position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '6px 14px', borderRadius: 99,
+                    backgroundColor: '#13131a', border: `1px solid ${entry.accentColor}45`,
+                    color: entry.accentColor, fontSize: 11, fontWeight: 600,
+                    cursor: 'pointer', whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${entry.accentColor}15`; e.currentTarget.style.borderColor = entry.accentColor; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#13131a'; e.currentTarget.style.borderColor = `${entry.accentColor}45`; }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 4v6h6" />
+                    <path d="M23 20v-6h-6" />
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
+                  </svg>
+                  {isFlipped ? 'Photo 1' : 'Photo 2'}
+                </button>
+
                 <div
                   style={{
-                    position: 'relative',
-                    width: '100%',
-                    height: '100%',
-                    transformStyle: 'preserve-3d',
-                    transition: 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                    position: 'absolute', bottom: 16, left: 16,
+                    padding: '3px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+                    backgroundColor: `${entry.accentColor}18`, color: entry.accentColor,
+                    border: `1px solid ${entry.accentColor}30`,
                   }}
                 >
-                  {/* ── Front face — Photo 1 placeholder ── */}
-                  <div
-                    style={{
-                      position: 'absolute', inset: 0,
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                      border: '1px dashed #2a2a33',
-                      backgroundColor: '#13131a',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
-                    }}
-                  >
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3f3f46" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <path d="M21 15l-5-5L5 21" />
-                    </svg>
-                    <span style={{ color: '#52525b', fontSize: 11, textAlign: 'center', padding: '0 16px', lineHeight: 1.5 }}>
-                      Photo 1<br />will appear here
-                    </span>
-                  </div>
+                  {selectedYear === 0 ? 'Today' : `+${selectedYear} years`}
+                </div>
+              </div>
+            )}
 
-                  {/* ── Back face — Photo 2 placeholder ── */}
-                  <div
-                    style={{
-                      position: 'absolute', inset: 0,
-                      backfaceVisibility: 'hidden',
-                      WebkitBackfaceVisibility: 'hidden',
-                      transform: 'rotateY(180deg)',
-                      borderRadius: 12,
-                      overflow: 'hidden',
-                      border: `1px dashed ${entry.accentColor}40`,
-                      backgroundColor: '#13131a',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10,
-                    }}
-                  >
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={entry.accentColor} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
-                      <rect x="3" y="3" width="18" height="18" rx="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <path d="M21 15l-5-5L5 21" />
-                    </svg>
-                    <span style={{ color: '#52525b', fontSize: 11, textAlign: 'center', padding: '0 16px', lineHeight: 1.5 }}>
-                      Photo 2<br />will appear here
-                    </span>
+            <div className="flex flex-col justify-between p-6" style={{ width: photo ? '50%' : '100%' }}>
+              <div className="mb-5">
+                <h2 className="text-white font-semibold text-lg mb-1">{entry.milestone}</h2>
+                <p className="text-zinc-500 text-sm leading-relaxed">{entry.milestoneDetail}</p>
+                <p className="text-zinc-600 text-xs mt-2">
+                  Based on CDC PLACES data for {form.stateabbr || 'the US'}.
+                </p>
+              </div>
+
+              <div className="space-y-3 mb-5">
+                {[
+                  { label: 'Heart disease risk', value: entry.heartDiseasePct },
+                  { label: 'Stroke risk',         value: entry.strokePct },
+                  { label: 'Lung disease risk',   value: entry.lungDiseasePct },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-zinc-500 text-xs">{label}</span>
+                      <span className="text-white font-bold text-sm tabular-nums">{formatRisk(value)}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min(value, 100)}%`, backgroundColor: entry.accentColor }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+                  <div className="text-zinc-600 text-xs mb-0.5">Risk summary</div>
+                  <div className="text-white text-sm font-medium">
+                    {entry.heartDiseasePct.toFixed(1)}% heart · {entry.strokePct.toFixed(1)}% stroke
+                  </div>
+                </div>
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+                  <div className="text-zinc-600 text-xs mb-0.5">{selectedYear === 0 ? 'Annual CO₂' : 'CO₂ Added'}</div>
+                  <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
+                    {selectedYear === 0 ? `${Math.round((cpd * 365 * 14) / 1000)} kg/yr` : `${entry.co2Kg.toLocaleString()} kg`}
+                  </div>
+                </div>
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+                  <div className="text-zinc-600 text-xs mb-0.5">Water Used</div>
+                  <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
+                    {selectedYear === 0
+                      ? `${Math.round((cpd * 365 * 3.7) / 1000)} kL/yr`
+                      : entry.waterUsedL > 999
+                      ? `${Math.round(entry.waterUsedL / 1000)} kL`
+                      : `${entry.waterUsedL} L`}
+                  </div>
+                </div>
+                <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
+                  <div className="text-zinc-600 text-xs mb-0.5">Money Spent</div>
+                  <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
+                    {selectedYear === 0
+                      ? `$${Math.round((cpd / 20) * 365 * 14).toLocaleString()}/yr`
+                      : `$${entry.moneySpent.toLocaleString()}`}
                   </div>
                 </div>
               </div>
-
-              {/* Flip button — bottom center */}
-              <button
-                onClick={() => setIsFlipped((f) => !f)}
-                style={{
-                  position: 'absolute',
-                  bottom: 16,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '6px 14px',
-                  borderRadius: 99,
-                  backgroundColor: '#13131a',
-                  border: `1px solid ${entry.accentColor}45`,
-                  color: entry.accentColor,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${entry.accentColor}15`; e.currentTarget.style.borderColor = entry.accentColor; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#13131a'; e.currentTarget.style.borderColor = `${entry.accentColor}45`; }}
-              >
-                {/* Flip icon — nudges on idle */}
-                <svg
-                  width="13" height="13" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ animation: 'flipNudge 3s ease-in-out infinite' }}
-                >
-                  <path d="M1 4v6h6" />
-                  <path d="M23 20v-6h-6" />
-                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15" />
-                </svg>
-                {isFlipped ? 'Photo 1' : 'Photo 2'}
-              </button>
-
-              {/* Year badge */}
-              <div
-                style={{
-                  position: 'absolute', bottom: 16, left: 16,
-                  padding: '3px 10px',
-                  borderRadius: 8,
-                  fontSize: 11, fontWeight: 600,
-                  backgroundColor: `${entry.accentColor}18`,
-                  color: entry.accentColor,
-                  border: `1px solid ${entry.accentColor}30`,
-                }}
-              >
-                {selectedYear === 0 ? 'Today' : `+${selectedYear} years`}
-              </div>
-            </div>}
-
-
-{/* ── Right: data (full-width when no photo) ── */}
-<div className="flex flex-col justify-between p-6" style={{ width: photo ? '50%' : '100%' }}>
-  {/* Title + description */}
-  <div className="mb-5">
-    <h2 className="text-white font-semibold text-lg mb-1">{entry.milestone}</h2>
-    <p className="text-zinc-500 text-sm leading-relaxed">
-      {entry.milestoneDetail}
-    </p>
-    <p className="text-zinc-600 text-xs mt-2">
-      Estimated smoking-related risks at this point in the timeline.
-    </p>
-  </div>
-
-  {/* Health risks */}
-  <div className="space-y-3 mb-5">
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-zinc-500 text-xs">Heart disease risk</span>
-        <span className="text-white font-bold text-sm tabular-nums">
-          {formatRisk(entry.heartDiseasePct)}
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{
-            width: `${Math.min(entry.heartDiseasePct, 100)}%`,
-            backgroundColor: entry.accentColor,
-          }}
-        />
-      </div>
-    </div>
-
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-zinc-500 text-xs">Stroke risk</span>
-        <span className="text-white font-bold text-sm tabular-nums">
-          {formatRisk(entry.strokePct)}
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{
-            width: `${Math.min(entry.strokePct, 100)}%`,
-            backgroundColor: entry.accentColor,
-          }}
-        />
-      </div>
-    </div>
-
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="text-zinc-500 text-xs">Lung disease risk</span>
-        <span className="text-white font-bold text-sm tabular-nums">
-          {formatRisk(entry.lungDiseasePct)}
-        </span>
-      </div>
-      <div className="h-1.5 rounded-full" style={{ backgroundColor: '#27272a' }}>
-        <div
-          className="h-full rounded-full transition-all duration-300"
-          style={{
-            width: `${Math.min(entry.lungDiseasePct, 100)}%`,
-            backgroundColor: entry.accentColor,
-          }}
-        />
-      </div>
-    </div>
-  </div>
-
-  {/* Stats grid */}
-  <div className="grid grid-cols-2 gap-2">
-    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-      <div className="text-zinc-600 text-xs mb-0.5">Risk summary</div>
-      <div className="text-white text-sm font-medium">
-        {entry.heartDiseasePct.toFixed(1)}% heart · {entry.strokePct.toFixed(1)}% stroke
-      </div>
-    </div>
-
-    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-      <div className="text-zinc-600 text-xs mb-0.5">
-        {selectedYear === 0 ? 'Annual CO₂' : 'CO₂ Added'}
-      </div>
-      <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
-        {selectedYear === 0
-          ? `${Math.round((cpd * 365 * 14) / 1000)} kg/yr`
-          : `${entry.co2Kg.toLocaleString()} kg`}
-      </div>
-    </div>
-
-    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-      <div className="text-zinc-600 text-xs mb-0.5">Water Used</div>
-      <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
-        {selectedYear === 0
-          ? `${Math.round((cpd * 365 * 3.7) / 1000)} kL/yr`
-          : entry.waterUsedL > 999
-          ? `${Math.round(entry.waterUsedL / 1000)} kL`
-          : `${entry.waterUsedL} L`}
-      </div>
-    </div>
-
-    <div className="rounded-lg p-3" style={{ backgroundColor: '#18181b' }}>
-      <div className="text-zinc-600 text-xs mb-0.5">Money Spent</div>
-      <div className="font-semibold text-sm" style={{ color: entry.accentColor }}>
-        {selectedYear === 0
-          ? `$${Math.round((cpd / 20) * 365 * 14).toLocaleString()}/yr`
-          : `$${entry.moneySpent.toLocaleString()}`}
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-</div>
+            </div>
+          </div>
+        </div>
 
         {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
@@ -802,7 +755,7 @@ const entry = {
           <div className="flex items-center gap-3">
             {selectedYear > 0 && (
               <button
-                onClick={() => setSelectedYear(selectedYear - 10)} // Was -5
+                onClick={() => setSelectedYear(selectedYear - 10)}
                 className="text-sm px-4 py-2 rounded-lg"
                 style={{ border: '1px solid #27272a', color: '#71717a' }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = '#3f3f46'; }}
@@ -811,17 +764,16 @@ const entry = {
                 ← Back
               </button>
             )}
-
             {selectedYear < MAX_YEARS ? (
               <button
-                onClick={() => setSelectedYear(selectedYear + 10)} // Was + 5
+                onClick={() => setSelectedYear(selectedYear + 10)}
                 className="text-sm px-5 py-2 rounded-lg font-semibold"
                 style={{ backgroundColor: entry.accentColor, color: '#fff' }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.85')}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
               >
                 +10 years →
-              </button> // was +5
+              </button>
             ) : (
               <button
                 onClick={() => window.print()}
@@ -843,34 +795,40 @@ const entry = {
 // ─── Root ──────────────────────────────────────────────────────────────────────
 
 export default function Home() {
-  const [step, setStep]   = useState<Step>('upload');
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [form, setForm]   = useState<FormData>({ age: '', yearsSmoked: '', cigarettesPerDay: '' });
+  const [step, setStep]       = useState<Step>('upload');
+  const [photo, setPhoto]     = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // NEW
+  const [form, setForm]       = useState<FormData>({
+    age: '',
+    yearsSmoked: '',
+    cigarettesPerDay: '',
+    stateabbr: '', // NEW
+  });
   const [riskData, setRiskData] = useState<any>(null);
 
   const handleTimelineSubmit = async () => {
-  try {
-  const res = await fetch('/api/auth/statRouter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      age: form.age,
-      yearsSmoked: form.yearsSmoked,
-      cigarettesPerDay: form.cigarettesPerDay,
-    }),
-  });
+    setIsLoading(true); // NEW
+    try {
+      const res = await fetch('/api/auth/statRouter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          age: form.age,
+          yearsSmoked: form.yearsSmoked,
+          cigarettesPerDay: form.cigarettesPerDay,
+          stateabbr: form.stateabbr, // NEW
+        }),
+      });
 
-    const json = await res.json();
-
-    console.log('API response:', json);
-
-    setRiskData(json.data); // ✅ THIS is what fixes your loading screen
-    setStep('timeline');    // move AFTER data is ready
-
-  } catch (err) {
-    console.error('Failed to fetch timeline:', err);
-  }
-};
+      const json = await res.json();
+      setRiskData(json.data);
+      setStep('timeline');
+    } catch (err) {
+      console.error('Failed to fetch timeline:', err);
+    } finally {
+      setIsLoading(false); // NEW
+    }
+  };
 
   if (step === 'upload') {
     return <UploadStep photo={photo} onPhoto={setPhoto} onNext={() => setStep('form')} />;
@@ -883,21 +841,22 @@ export default function Home() {
         onChange={setForm}
         onBack={() => setStep('upload')}
         onNext={handleTimelineSubmit}
+        isLoading={isLoading} // NEW
       />
     );
   }
 
   return (
-<TimelineStep
-  form={form}
-  photo={photo}
-  riskData={riskData}
-  onEdit={() => setStep('form')}
-  onReset={() => {
-    setStep('upload');
-    setPhoto(null);
-    setForm({ age: '', yearsSmoked: '', cigarettesPerDay: '' });
-  }}
-/>
+    <TimelineStep
+      form={form}
+      photo={photo}
+      riskData={riskData}
+      onEdit={() => setStep('form')}
+      onReset={() => {
+        setStep('upload');
+        setPhoto(null);
+        setForm({ age: '', yearsSmoked: '', cigarettesPerDay: '', stateabbr: '' });
+      }}
+    />
   );
 }
