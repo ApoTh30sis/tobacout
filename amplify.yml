@@ -6,8 +6,8 @@ frontend:
         - npm ci
     build:
       commands:
-        - env | grep -e GEMINI_API_KEY >> .env.production
-        - env | grep -e NEXT_PUBLIC_ >> .env.production
+        - printenv | grep -e GEMINI_API_KEY >> .env.production || true
+        - printenv | grep -e NEXT_PUBLIC_ >> .env.production || true
         - npm run build
   artifacts:
     baseDirectory: .next
